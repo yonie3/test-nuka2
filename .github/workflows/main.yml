@@ -36,7 +36,7 @@ jobs:
            brew install -f -q --cask virtualbox
            brew install -f -q --formula docker docker-machine
            curl -sL https://github.com/boot2docker/boot2docker/releases/download/v19.03.12/boot2docker.iso -o ~/Downloads/boot2docker.iso
-           docker-machine create -d virtualbox --virtualbox-disk-size=377223 --virtualbox-memory=8096 --virtualbox-cpu-count=-2 --virtualbox-boot2docker-url ~/Downloads/boot2docker.iso default
+           docker-machine create -d virtualbox --virtualbox-disk-size=408000 --virtualbox-memory=8096 --virtualbox-cpu-count=-2 --virtualbox-boot2docker-url ~/Downloads/boot2docker.iso default
            docker-machine env default
            
        - name: Cleanup
