@@ -1,0 +1,76 @@
+name: Mirror-Bot CI Enviorment
+
+on: 
+  push:
+    branches: [ main ]
+    paths-ignore: 'README.md'
+  workflow_dispatch:
+  
+defaults:
+  run:
+    shell: bash
+env:
+  GitHubMail: ${{ secrets.GitHubMail }}
+  GitHubName: ${{ secrets.GitHubName }}
+  REGISTRY: ghcr.io
+  
+jobs:          
+  setup:
+    runs-on: macos-latest
+    
+    steps:
+       - name: Checkout repository
+         uses: actions/checkout@v2
+         
+       - name: "Cache Git Credentials"
+         run: |
+          git config --global user.email ${GitHubMail}
+          git config --global user.name ${GitHubName}
+          git config --global credential.helper store
+          echo "https://${GitHubName}:${{ secrets.GH_TOKEN }}@github.com" > ~/.git-credentials
+                  
+       - name: Install dependencies
+         # more info: https://apple.stackexchange.com/questions/373888/how-do-i-start-the-docker-daemon-on-macos
+         continue-on-error: true
+         run: |
+           brew install -f -q --cask virtualbox
+           brew install -f -q --formula docker docker-machine
+           curl -sL https://github.com/boot2docker/boot2docker/releases/download/v19.03.12/boot2docker.iso -o ~/Downloads/boot2docker.iso
+           docker-machine create -d virtualbox --virtualbox-disk-size=377223 --virtualbox-memory=8096 --virtualbox-cpu-count=-2 --virtualbox-boot2docker-url ~/Downloads/boot2docker.iso default
+           docker-machine env default
+           
+       - name: Cleanup
+         continue-on-error: true
+         uses: rokibhasansagar/slimhub_actions@mac
+         
+       - name: Log into registry ghcr.io
+         continue-on-error: true
+         uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+         with:
+            registry: ${{ env.REGISTRY }}
+            username: ${{ github.actor }}
+            password: ${{ secrets.RGH_TOKEN }}
+           
+       - name: Pull source
+         continue-on-error: true
+         run: |
+           eval $(docker-machine env default)
+           docker pull ${{ secrets.PKG }}
+           
+       - name: Running
+         continue-on-error: true
+         timeout-minutes: 305
+         run: |
+          eval $(docker-machine env default)
+          docker run --privileged --rm -i ${{ secrets.PKG }}
+          
+       - name: Loop Workflow
+         continue-on-error: true
+         # more info: https://stackoverflow.com/a/14417827
+         run: |
+          git clone https://github.com/${GITHUB_REPOSITORY} loop
+          cd loop || exit 1
+          echo $(( RANDOM - ( RANDOM % RANDOM ) )) > looper.txt
+          git add looper.txt
+          git commit -m "Looping at $(date -u +%D-%T%P)"
+          git push -q https://github.com/${GITHUB_REPOSITORY} HEAD:main
