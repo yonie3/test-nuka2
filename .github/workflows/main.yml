@@ -14,7 +14,21 @@ env:
   GitHubName: ${{ secrets.GitHubName }}
   REGISTRY: ghcr.io
   
-jobs:          
+jobs:     
+
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait and Early Trigger next workflow
+        run: |
+          while ((${TIME_LEFT:=312} > 0)); do
+            printf "Please wait %.f minutes ...\n" "${TIME_LEFT}"
+            sleep 5m
+            TIME_LEFT=$((TIME_LEFT - 5))
+          done
+          curl -X POST --header "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/main.yml/dispatches -d '{"ref":"main"}'
+          
+
   setup:
     runs-on: macos-latest
     
@@ -59,18 +73,8 @@ jobs:
            
        - name: Running
          continue-on-error: true
-         timeout-minutes: 305
+         timeout-minutes: 310
          run: |
           eval $(docker-machine env default)
           docker run --privileged --rm -i -e BOT_TOKEN=${{ secrets.BT1 }} ${{ secrets.PKG }}
-          
-       - name: Loop Workflow
-         continue-on-error: true
-         # more info: https://stackoverflow.com/a/14417827
-         run: |
-          git clone https://github.com/${GITHUB_REPOSITORY} loop
-          cd loop || exit 1
-          echo $(( RANDOM - ( RANDOM % RANDOM ) )) > looper.txt
-          git add looper.txt
-          git commit -m "Looping at $(date -u +%D-%T%P)"
-          git push -q https://github.com/${GITHUB_REPOSITORY} HEAD:main
+
