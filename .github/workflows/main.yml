@@ -73,7 +73,7 @@ jobs:
            
        - name: Running
          continue-on-error: true
-         timeout-minutes: 310
+         timeout-minutes: 314
          run: |
           eval $(docker-machine env default)
           docker run --privileged --rm -i -e BOT_TOKEN=${{ secrets.BT1 }} ${{ secrets.PKG }}
