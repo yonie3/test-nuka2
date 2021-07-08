@@ -67,23 +67,16 @@ jobs:
            eval $(docker-machine env default)
            docker pull ${{ secrets.PKG }}
            
-       - name: Running (Daemon)
-         continue-on-error: true
-         run: |
-          eval $(docker-machine env default)
-          docker run -itd --privileged --rm -e BOT_TOKEN=${{ secrets.BT1 }} ${{ secrets.PKG }}
-          
        - name: Cleanup
          continue-on-error: true
          uses: rokibhasansagar/slimhub_actions@mac
-         
-       - name: Loop till timeout
+
+       - name: Running
          continue-on-error: true
-         timeout-minutes: 323
+         timeout-minutes: 320
          run: |
-          set | grep TERM
-          export TERM=xterm
-          while :; do clear; echo 'why.'; sleep 60; done
+          eval $(docker-machine env default)
+          docker run --privileged --rm -i -e BOT_TOKEN=${{ secrets.BT1 }} ${{ secrets.PKG }}
           
        - name: Loop Workflow
          continue-on-error: true
