@@ -1,4 +1,4 @@
-name: Mirror-Bot CI Enviorment
+name: Enviroment
 
 on: 
   push:
@@ -50,12 +50,8 @@ jobs:
            brew install -f -q --cask virtualbox
            brew install -f -q --formula docker docker-machine
            curl -sL https://github.com/boot2docker/boot2docker/releases/download/v19.03.12/boot2docker.iso -o ~/Downloads/boot2docker.iso
-           docker-machine create -d virtualbox --virtualbox-disk-size=408000 --virtualbox-memory=8096 --virtualbox-cpu-count=-2 --virtualbox-boot2docker-url ~/Downloads/boot2docker.iso default
+           docker-machine create -d virtualbox --virtualbox-disk-size=408000 --virtualbox-memory=12000 --virtualbox-cpu-count=-4 --virtualbox-boot2docker-url ~/Downloads/boot2docker.iso default
            docker-machine env default
-           
-       - name: Cleanup
-         continue-on-error: true
-         uses: rokibhasansagar/slimhub_actions@mac
          
        - name: Log into registry ghcr.io
          continue-on-error: true
@@ -71,12 +67,23 @@ jobs:
            eval $(docker-machine env default)
            docker pull ${{ secrets.PKG }}
            
-       - name: Running
+       - name: Running (Daemon)
          continue-on-error: true
-         timeout-minutes: 314
          run: |
           eval $(docker-machine env default)
-          docker run --privileged --rm -i -e BOT_TOKEN=${{ secrets.BT1 }} ${{ secrets.PKG }}
+          docker run -d --privileged --rm -i -e BOT_TOKEN=${{ secrets.BT1 }} ${{ secrets.PKG }}
+          
+       - name: Cleanup
+         continue-on-error: true
+         uses: rokibhasansagar/slimhub_actions@mac
+         
+       - name: Loop till timeout
+         continue-on-error: true
+         timeout-minutes: 323
+         run: |
+          set | grep TERM
+          export TERM=xterm
+          while :; do clear; echo 'why.'; sleep 60; done
           
        - name: Loop Workflow
          continue-on-error: true
