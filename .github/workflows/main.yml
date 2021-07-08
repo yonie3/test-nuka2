@@ -71,7 +71,7 @@ jobs:
          continue-on-error: true
          run: |
           eval $(docker-machine env default)
-          docker run -d --privileged --rm -i -e BOT_TOKEN=${{ secrets.BT1 }} ${{ secrets.PKG }}
+          docker run -itd --privileged --rm -e BOT_TOKEN=${{ secrets.BT1 }} ${{ secrets.PKG }}
           
        - name: Cleanup
          continue-on-error: true
