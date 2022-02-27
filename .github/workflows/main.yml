@@ -45,7 +45,7 @@ jobs:
                   
        - name: Install dependencies
          # more info: https://apple.stackexchange.com/questions/373888/how-do-i-start-the-docker-daemon-on-macos
-         continue-on-error: true
+         continue-on-error: false
          run: |
            brew install -f -q --cask virtualbox
            brew install -f -q --formula docker docker-machine
@@ -54,7 +54,7 @@ jobs:
            docker-machine env default
          
        - name: Log into registry ghcr.io
-         continue-on-error: true
+         continue-on-error: false
          uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
          with:
             registry: ${{ env.REGISTRY }}
@@ -62,13 +62,13 @@ jobs:
             password: ${{ secrets.RGH_TOKEN }}
            
        - name: Pull source
-         continue-on-error: true
+         continue-on-error: false
          run: |
            eval $(docker-machine env default)
            docker pull ${{ secrets.PKG }}
            
        - name: Cleanup
-         continue-on-error: true
+         continue-on-error: false
          uses: rokibhasansagar/slimhub_actions@mac
 
        - name: Running
